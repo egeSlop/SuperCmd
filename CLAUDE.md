@@ -26,6 +26,7 @@ launcher/
 │   │   ├── extension-registry.ts      # Extension catalog, install, uninstall, update
 │   │   ├── script-command-runner.ts   # Raycast-compatible script command execution
 │   │   ├── ai-provider.ts             # AI streaming (OpenAI / Anthropic / Ollama) via Node http/https
+│   │   ├── semantic-search.ts         # On-device semantic search (EmbeddingGemma 2): models, helper process, index
 │   │   └── settings-store.ts          # JSON settings persistence (AppSettings, cached in memory)
 │   ├── renderer/                      # Electron renderer process (UI)
 │   │   ├── types/
@@ -221,7 +222,7 @@ When implementing a new Raycast API:
 
 ### Internationalization (i18n)
 
-Locales live in `src/renderer/src/i18n/locales/` — `en.json` is the source of truth, plus `zh-Hans`, `zh-Hant`, `ja`, `ko`, `fr`, `de`, `es`, `ru`.
+Locales live in `src/renderer/src/i18n/locales/` — `en.json` is the source of truth, plus `zh-Hans`, `zh-Hant`, `ja`, `ko`, `fr`, `de`, `es`, `it`, `ru`.
 
 **Rule: whenever you add, rename, or remove a user-facing string, update every locale file in the same change.** Missing keys fall back to English (or a derived label from the last path segment), which looks broken for non-English users. Keys are only "done" when all locales have them.
 
@@ -275,6 +276,26 @@ SuperCmd supports AI features through:
 - **AI API Compatibility**: Full `AI.ask()` and `useAI()` hook support
 
 AI availability is checked via `environment.canAccess(AI)` and cached for performance.
+
+### Semantic Search (EmbeddingGemma 2)
+
+The `system-semantic-search` command searches files, photos, video, audio, notes and clipboard history by meaning, fully on-device.
+
+- **Runtime**: `src/native/embedding-server.swift` links the llama.cpp xcframework (pinned in `scripts/build-llamacpp.mjs`, built by `build:native`) and runs on Metal. It speaks JSON lines (`embed`, `embed_media`, `extract_text`) like `whisper-transcriber`'s serve mode; images/video/audio are decoded with ImageIO/AVFoundation and PDFs/DOCX with PDFKit/AppKit.
+- **Models**: downloaded on demand into `<userData>/semantic-search/models` from pinned Hugging Face revisions with SHA-256 checks. Text model variants: Unsloth UD-Q4_K_XL (default), UD-Q5_K_XL, Q8_0. The media encoder (`mmproj`, Q8_0) is optional and only loaded while media is being indexed.
+- **Lifecycle**: `src/main/semantic-search.ts` spawns the helper lazily, prioritises queries over indexing, and stops it after 2 minutes idle (or right after a media indexing pass). Index refreshes are incremental every 30 minutes and when the view opens on a stale index: only files whose mtime/size changed are read, and text whose content hash is unchanged is not re-embedded. The in-memory index is dropped after 5 idle minutes.
+- **Power**: with `onlyWhileCharging` (default on), background indexing waits for AC power (`powerMonitor`), pauses on `on-battery` keeping progress, and resumes on `on-ac`. Manual "Update Now"/"Rebuild" and searching always run.
+- **Index**: 256-dim Matryoshka vectors stored as int8 + per-row scale (`index.bin` + `index.json`); search is a brute-force scan. Pure helpers live in `semantic-search-core.ts` (tested by `scripts/test-semantic-search-core.mjs`).
+- **Prompts**: queries use `task: search result | query: …`, documents `title: … | text: …` (EmbeddingGemma 2 model card). Media is embedded without a prefix.
+- **Query correction**: before scoring, most of the "average query" direction is removed from the query vector (`debiasQuery`, strength 0.8; the centroid of `QUERY_CENTROID_PROBES` is cached per model in `query-centroid.json`). Without it short, generic items (clipboard snippets) outrank real matches, e.g. Turkish "sözleşme" contracts for "agreement".
+- **Drives**: external (`/Volumes`, as Finder shows them) and network drives are listed in Settings; nothing on a drive is read until the user opts it in.
+  - An opted-in drive keeps its own index in `.semantic-index.noindex/` at its root, in the portable format of `docs/semantic-index-format.md`, shared with krunner-embed on Linux. Paths are relative and matched in NFC; `volume.json` there is the opt-in. Read-only drives keep both under `<userData>/semantic-search/volumes/`.
+  - `lock.json` (60 s heartbeat; stale after 15 min) marks the machine updating it.
+  - Drive mtimes compare with FAT/time-zone tolerance, and media is matched by a size + first/last 64 KiB fingerprint, so a drive moved between machines isn't re-embedded.
+  - Each indexing run does the home index, then every writable opted-in drive. Searches cover all of them.
+  - Code: codec, lock rules and mount parsing in `semantic-search-core.ts`; volumes, opt-in, locks and file I/O in `semantic-search-drives.ts`. Do not change the format without updating krunner-embed; the shared fixture `scripts/fixtures/semantic-index/krunner-embed.bin` is written by krunner-embed's tests.
+- **Main launcher**: `hooks/useLauncherSemanticResults.ts` adds a "By meaning" section after Files (`assembleRootSearchSections`). Up to 20 files that stand out (leave-one-out z ≥ 3.5 for documents, ≥ 5.5 for media) are shown; the section is hidden while the query names an app/command (unless it has 3+ words), and `showInLauncher` turns it off. Launcher queries never start indexing.
+- **UI**: `SemanticSearchExtension.tsx` (launcher view) and `settings/SemanticSearchSettings.tsx` (Settings → AI → Semantic Search). Config is machine-local (`<userData>/semantic-search/config.json`), not part of synced settings.
 
 ## System Integration
 

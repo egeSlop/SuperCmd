@@ -96,6 +96,85 @@ export interface FileSearchIndexStatus {
   lastError: string | null;
 }
 
+export type SemanticModelVariant = 'compact' | 'balanced' | 'precise';
+export type SemanticItemKind = 'document' | 'image' | 'video' | 'audio' | 'note' | 'clipboard';
+
+export interface SemanticSearchConfig {
+  enabled: boolean;
+  modelVariant: SemanticModelVariant;
+  includeMedia: boolean;
+  includeNotes: boolean;
+  includeClipboard: boolean;
+  folders: string[];
+  onlyWhileCharging: boolean;
+  showInLauncher: boolean;
+}
+
+export interface SemanticModelFileStatus {
+  state: 'not-downloaded' | 'downloading' | 'downloaded' | 'error';
+  fileName: string;
+  bytesDownloaded: number;
+  totalBytes: number;
+  error?: string;
+}
+
+/** An external or network drive; opted-in drives carry their own index. */
+export interface SemanticDriveStatus {
+  root: string;
+  label: string;
+  fsType: string;
+  network: boolean;
+  readOnly: boolean;
+  bytesTotal: number;
+  enabled: boolean;
+  storage?: 'drive' | 'local';
+  writable?: boolean;
+  items?: number;
+  chunks?: number;
+  diskBytes?: number;
+  lastIndexedAt?: number | null;
+  writer?: string;
+  incompatible?: boolean;
+  state?: 'idle' | 'indexing' | 'loading' | 'locked';
+  lock?: { owner: string; heartbeat: number | null };
+  error?: string;
+}
+
+export interface SemanticSearchStatus {
+  config: SemanticSearchConfig;
+  volumes: SemanticDriveStatus[];
+  helperAvailable: boolean;
+  textModel: SemanticModelFileStatus;
+  mediaModel: SemanticModelFileStatus;
+  ready: boolean;
+  index: {
+    state: 'idle' | 'indexing' | 'error';
+    processed: number;
+    total: number;
+    target?: string;
+    items: number;
+    chunks: number;
+    lastIndexedAt: number | null;
+    error?: string;
+    pausedOnBattery: boolean;
+  };
+}
+
+export interface SemanticSearchResult {
+  id: string;
+  kind: SemanticItemKind;
+  title: string;
+  subtitle: string;
+  preview: string;
+  score: number;
+  /** How far the score stands out from every other candidate (leave-one-out z-score). */
+  z: number;
+  path?: string;
+  noteId?: string;
+  clipboardId?: string;
+  updatedAt: number;
+}
+
 export type CalendarAccessStatus =
   | 'granted'
   | 'write-only'
@@ -1095,6 +1174,15 @@ export interface ElectronAPI {
   searchIndexedFiles: (query: string, options?: { limit?: number }) => Promise<IndexedFileSearchResult[]>;
   getFileSearchIndexStatus: () => Promise<FileSearchIndexStatus>;
   refreshFileSearchIndex: (reason?: string) => Promise<FileSearchIndexStatus>;
+  semanticSearchStatus: () => Promise<SemanticSearchStatus>;
+  semanticSearchUpdateConfig: (patch: Partial<SemanticSearchConfig>) => Promise<SemanticSearchStatus>;
+  semanticSearchDownloadModels: () => Promise<SemanticSearchStatus>;
+  semanticSearchQuery: (query: string, options?: { limit?: number; kinds?: SemanticItemKind[]; minZ?: number; launcher?: boolean }) => Promise<SemanticSearchResult[]>;
+  semanticSearchReindex: (force?: boolean) => Promise<SemanticSearchStatus>;
+  semanticSearchReset: () => Promise<SemanticSearchStatus>;
+  semanticSearchPickFolders: () => Promise<string[]>;
+  semanticSearchSetVolumeEnabled: (root: string, enabled: boolean) => Promise<{ error: string | null; status: SemanticSearchStatus }>;
+  semanticSearchBreakLock: (root: string) => Promise<{ error: string | null; status: SemanticSearchStatus }>;
   getAppearance: () => Promise<'dark' | 'light'>;
 
   // SQLite query execution

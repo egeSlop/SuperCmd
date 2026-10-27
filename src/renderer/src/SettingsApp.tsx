@@ -94,6 +94,9 @@ const SettingsApp: React.FC = () => {
   const [extensionFocusTarget, setExtensionFocusTarget] = useState<SettingsTarget | null>(
     initialRoute.target || null
   );
+  const [aiFocusTarget, setAiFocusTarget] = useState<SettingsTarget | null>(
+    initialRoute.tab === 'ai' ? initialRoute.target || null : null
+  );
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'general', label: t('settings.tabs.general'), icon: tabDefinitions[0].icon },
     { id: 'ai', label: t('settings.tabs.ai'), icon: tabDefinitions[1].icon },
@@ -119,6 +122,9 @@ const SettingsApp: React.FC = () => {
       setActiveTab(payload.tab);
       if (payload.tab === 'extensions') {
         setExtensionFocusTarget(payload.target || null);
+      }
+      if (payload.tab === 'ai') {
+        setAiFocusTarget(payload.target || null);
       }
     });
   }, []);
@@ -194,7 +200,7 @@ const SettingsApp: React.FC = () => {
         ) : (
           <div className="p-5">
             {activeTab === 'general' && <GeneralTab />}
-            {activeTab === 'ai' && <AITab />}
+            {activeTab === 'ai' && <AITab focusTarget={aiFocusTarget} />}
             {activeTab === 'advanced' && <AdvancedTab />}
           </div>
         )}

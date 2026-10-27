@@ -1706,6 +1706,13 @@ async function discoverAndBuildCommands(): Promise<CommandInfo[]> {
       category: 'system',
     },
     {
+      id: 'system-semantic-search',
+      title: 'Semantic Search',
+      subtitle: 'EmbeddingGemma',
+      keywords: ['semantic', 'search', 'meaning', 'embedding', 'gemma', 'ai', 'files', 'photos', 'images', 'notes', 'clipboard', 'find'],
+      category: 'system',
+    },
+    {
       id: 'system-search-web',
       title: 'Search Web',
       subtitle: 'Search',

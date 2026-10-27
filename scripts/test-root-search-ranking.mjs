@@ -70,7 +70,7 @@ const {
   scoreRootSearchCandidate,
   scoreRootSearchFields,
 } = ranking;
-const { assembleRootSearchSections } = sections;
+const { assembleRootSearchSections, MAX_LAUNCHER_SEMANTIC_RESULTS } = sections;
 
 const now = Date.UTC(2026, 4, 17);
 
@@ -999,6 +999,102 @@ test('weak browser history does not autocomplete', () => {
     fields: [{ value: 'How to use Vivaldi', kind: 'label' }],
   });
   assert.equal(getSharedRootCompletion(query, [history]), null);
+});
+
+function semanticFile(name) {
+  return command(`system-file-result:${name}`, name, {
+    path: `/Users/me/Documents/${name}`,
+    rootSearchStableKey: `file:/users/me/documents/${name.toLowerCase()}`,
+    rootSearchSource: 'file',
+    rootSearchSubtype: 'file',
+  });
+}
+
+test('"By meaning" files get their own section after Files, without duplicates', () => {
+  const query = 'agreement';
+  const file = candidate({
+    query,
+    id: 'system-file-result:Agreement.pdf',
+    title: 'Agreement.pdf',
+    subtype: 'file',
+    stableKey: 'file:/users/me/documents/agreement.pdf',
+    pathOrUrl: '/Users/me/Documents/Agreement.pdf',
+  });
+  const more = Array.from({ length: MAX_LAUNCHER_SEMANTIC_RESULTS }, (_, i) => `Ek ${i + 1}.pdf`);
+  const semantic = ['Agreement.pdf', 'Sözleşme.pdf', 'Hizmet Sözleşmesi.docx', ...more].map(semanticFile);
+  const suggestion = command('web-search-root-suggestion:agreement', 'agreement');
+  const assembled = assembleRootSearchForTest({
+    searchQuery: query,
+    rootRankedCandidates: rankRootSearchCandidates([file]),
+    fileCandidates: [file],
+    semanticFileCommands: semantic,
+    webSearchRootSuggestionCommands: [suggestion],
+  });
+  assert.deepEqual(ids(assembled.querySemanticSectionCommands), [
+    'system-file-result:Sözleşme.pdf',
+    'system-file-result:Hizmet Sözleşmesi.docx',
+    ...more.slice(0, MAX_LAUNCHER_SEMANTIC_RESULTS - 2).map((name) => `system-file-result:${name}`),
+  ]);
+  assert.equal(MAX_LAUNCHER_SEMANTIC_RESULTS, 20);
+  assert.deepEqual(
+    Array.from(assembled.launcherCommandSections, (section) => section.title),
+    ['launcher.categories.files', 'launcher.categories.byMeaning']
+  );
+  assert.deepEqual(ids(assembled.displayCommands), [
+    ...ids(assembled.queryFileSectionCommands),
+    ...ids(assembled.querySemanticSectionCommands),
+  ]);
+});
+
+test('"By meaning" files sit above search suggestions when there are no name matches', () => {
+  const assembled = assembleRootSearchForTest({
+    searchQuery: 'sözleşme',
+    semanticFileCommands: [semanticFile('Agreement.pdf')],
+    webSearchRootSuggestionCommands: [command('web-search-root-suggestion:sözleşme', 'sözleşme örneği')],
+  });
+  assert.deepEqual(
+    Array.from(assembled.launcherCommandSections, (section) => section.title),
+    ['launcher.categories.byMeaning', 'launcher.categories.search']
+  );
+});
+
+test('"By meaning" files stay hidden while typing an app or command name', () => {
+  for (const [query, subtype, title] of [['notes', 'app', 'Notes'], ['calc', 'app', 'Calculator'], ['clipboard', 'system-command', 'Clipboard History']]) {
+    const match = candidate({ query, id: `cmd-${title}`, title, subtype });
+    const assembled = assembleRootSearchForTest({
+      searchQuery: query,
+      rootRankedCandidates: rankRootSearchCandidates([match]),
+      semanticFileCommands: [semanticFile('Meeting notes.txt')],
+    });
+    assert.equal(assembled.queryResultCommands[0].id, `cmd-${title}`, query);
+    assert.equal(assembled.querySemanticSectionCommands.length, 0, query);
+  }
+});
+
+test('"By meaning" files show for descriptive queries even next to a command match', () => {
+  const query = 'clipboard history from yesterday';
+  const match = candidate({
+    query,
+    id: 'cmd-clipboard',
+    title: 'Clipboard History',
+    subtype: 'system-command',
+    fields: [{ value: 'Clipboard History', kind: 'label' }, { value: 'clipboard history from yesterday', kind: 'keyword' }],
+  });
+  const assembled = assembleRootSearchForTest({
+    searchQuery: query,
+    rootRankedCandidates: rankRootSearchCandidates([match]),
+    semanticFileCommands: [semanticFile('Clipboard export.txt')],
+  });
+  assert.deepEqual(ids(assembled.querySemanticSectionCommands), ['system-file-result:Clipboard export.txt']);
+});
+
+test('"By meaning" files never show in bang mode or for URLs', () => {
+  const semanticFileCommands = [semanticFile('Agreement.pdf')];
+  for (const rootBangMode of ['selecting', 'active']) {
+    assert.equal(assembleRootSearchForTest({ searchQuery: '!g agreement', rootBangMode, semanticFileCommands }).querySemanticSectionCommands.length, 0);
+  }
+  const openUrl = command('browser-search-open-url', 'Open example.com', { rootSearchStableKey: 'open-url:example.com' });
+  assert.equal(assembleRootSearchForTest({ searchQuery: 'example.com', browserSearchSyntheticCommand: openUrl, semanticFileCommands }).querySemanticSectionCommands.length, 0);
 });
 
 // All tests passed if we reach this point without throwing an error.

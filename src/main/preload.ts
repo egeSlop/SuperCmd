@@ -629,6 +629,20 @@ const electronAPI = {
     lastError: string | null;
   }> => ipcRenderer.invoke('file-search-refresh', reason),
 
+  // ─── Semantic Search (EmbeddingGemma 2) ───────────────────────────
+  semanticSearchStatus: (): Promise<any> => ipcRenderer.invoke('semantic-search-status'),
+  semanticSearchUpdateConfig: (patch: Record<string, unknown>): Promise<any> =>
+    ipcRenderer.invoke('semantic-search-update-config', patch),
+  semanticSearchDownloadModels: (): Promise<any> => ipcRenderer.invoke('semantic-search-download-models'),
+  semanticSearchQuery: (query: string, options?: { limit?: number; kinds?: string[]; minZ?: number; launcher?: boolean }): Promise<any[]> =>
+    ipcRenderer.invoke('semantic-search-query', query, options),
+  semanticSearchReindex: (force?: boolean): Promise<any> => ipcRenderer.invoke('semantic-search-reindex', force),
+  semanticSearchReset: (): Promise<any> => ipcRenderer.invoke('semantic-search-reset'),
+  semanticSearchPickFolders: (): Promise<string[]> => ipcRenderer.invoke('semantic-search-pick-folder'),
+  semanticSearchSetVolumeEnabled: (root: string, enabled: boolean): Promise<any> =>
+    ipcRenderer.invoke('semantic-search-set-volume-enabled', root, enabled),
+  semanticSearchBreakLock: (root: string): Promise<any> => ipcRenderer.invoke('semantic-search-break-lock', root),
+
   // Get system appearance (dark/light)
   getAppearance: (): Promise<'dark' | 'light'> =>
     ipcRenderer.invoke('get-appearance'),

@@ -26,6 +26,7 @@ import ScheduleExtension from './ScheduleExtension';
 import OnboardingExtension from './OnboardingExtension';
 import FileSearchExtension from './FileSearchExtension';
 import MenuItemSearch from './MenuItemSearchExtension';
+import SemanticSearchExtension from './SemanticSearchExtension';
 import { useDetachedPortalWindow } from './useDetachedPortalWindow';
 import { useAppViewManager } from './hooks/useAppViewManager';
 import { useAiChat } from './hooks/useAiChat';
@@ -37,6 +38,7 @@ import { useWhisperManager } from './hooks/useWhisperManager';
 import { useBrowserSearch } from './hooks/useBrowserSearch';
 import { useBrowserResultsController } from './hooks/useBrowserResultsController';
 import { useWebSearchController } from './hooks/useWebSearchController';
+import { useLauncherSemanticResults } from './hooks/useLauncherSemanticResults';
 import { useLauncherCommandModel } from './hooks/useLauncherCommandModel';
 import { useLauncherInlineArguments } from './hooks/useLauncherInlineArguments';
 import { useLauncherActionModel } from './hooks/useLauncherActionModel';
@@ -191,12 +193,12 @@ const App: React.FC = () => {
   const {
     extensionView, extensionPreferenceSetup, scriptCommandSetup, scriptCommandOutput,
     showClipboardManager, clipboardManagerOpenedViaShortcut, showSnippetManager, showNotesSearch, showCanvasSearch, showQuickLinkManager, showFileSearch, showCursorPrompt,
-    showWhisper, showSpeak, showCamera, showSchedule, showWindowManager, showMenuItemSearch, showAppUninstall, showWhisperOnboarding, showWhisperHint, showOnboarding, aiMode,
+    showWhisper, showSpeak, showCamera, showSchedule, showWindowManager, showMenuItemSearch, showSemanticSearch, showAppUninstall, showWhisperOnboarding, showWhisperHint, showOnboarding, aiMode,
     openOnboarding, openWhisper, openClipboardManager,
-    openSnippetManager, openNotesSearch, openCanvasSearch, openQuickLinkManager, openFileSearch, openCursorPrompt, openSpeak, openCamera, openSchedule, openWindowManager, openMenuItemSearch, openAppUninstall,
+    openSnippetManager, openNotesSearch, openCanvasSearch, openQuickLinkManager, openFileSearch, openCursorPrompt, openSpeak, openCamera, openSchedule, openWindowManager, openMenuItemSearch, openSemanticSearch, openAppUninstall,
     setExtensionView, setExtensionPreferenceSetup, setScriptCommandSetup, setScriptCommandOutput,
     setShowClipboardManager, setClipboardManagerOpenedViaShortcut, setShowSnippetManager, setShowNotesSearch, setShowCanvasSearch, setShowQuickLinkManager, setShowFileSearch, setShowCursorPrompt,
-    setShowWhisper, setShowSpeak, setShowCamera, setShowSchedule, setShowWindowManager, setShowMenuItemSearch, setShowAppUninstall, setShowWhisperOnboarding, setShowWhisperHint,
+    setShowWhisper, setShowSpeak, setShowCamera, setShowSchedule, setShowWindowManager, setShowMenuItemSearch, setShowSemanticSearch, setShowAppUninstall, setShowWhisperOnboarding, setShowWhisperHint,
     setShowOnboarding, setAiMode,
   } = useAppViewManager();
   const {
@@ -454,6 +456,7 @@ const App: React.FC = () => {
     showSnippetManager ||
     showQuickLinkManager ||
     showFileSearch ||
+    showSemanticSearch ||
     showNotesSearch ||
     showCanvasSearch ||
     isBrowserResultsViewOpen ||
@@ -1234,10 +1237,10 @@ const App: React.FC = () => {
   }, [contextMenu]);
 
   useEffect(() => {
-    if (!showActions && !contextMenu && !quickLinkDynamicPrompt && !bookmarkNicknamePrompt && !aiMode && !extensionView && !showClipboardManager && !showSnippetManager && !showNotesSearch && !showQuickLinkManager && !showFileSearch && !showMenuItemSearch && !showCursorPrompt && !showWhisper && !showSpeak && !showCamera && !showSchedule && !showWindowManager && !showAppUninstall && !showOnboarding && browserResultsViewQuery === null && webSearchQuery === null) {
+    if (!showActions && !contextMenu && !quickLinkDynamicPrompt && !bookmarkNicknamePrompt && !aiMode && !extensionView && !showClipboardManager && !showSnippetManager && !showNotesSearch && !showQuickLinkManager && !showFileSearch && !showMenuItemSearch && !showSemanticSearch && !showCursorPrompt && !showWhisper && !showSpeak && !showCamera && !showSchedule && !showWindowManager && !showAppUninstall && !showOnboarding && browserResultsViewQuery === null && webSearchQuery === null) {
       restoreLauncherFocus();
     }
-  }, [showActions, contextMenu, quickLinkDynamicPrompt, bookmarkNicknamePrompt, aiMode, extensionView, showClipboardManager, showSnippetManager, showNotesSearch, showQuickLinkManager, showFileSearch, showMenuItemSearch, showCursorPrompt, showWhisper, showSpeak, showCamera, showSchedule, showWindowManager, showAppUninstall, showOnboarding, showWhisperOnboarding, browserResultsViewQuery, webSearchQuery, restoreLauncherFocus]);
+  }, [showActions, contextMenu, quickLinkDynamicPrompt, bookmarkNicknamePrompt, aiMode, extensionView, showClipboardManager, showSnippetManager, showNotesSearch, showQuickLinkManager, showFileSearch, showMenuItemSearch, showSemanticSearch, showCursorPrompt, showWhisper, showSpeak, showCamera, showSchedule, showWindowManager, showAppUninstall, showOnboarding, showWhisperOnboarding, browserResultsViewQuery, webSearchQuery, restoreLauncherFocus]);
 
   const isLauncherModeActive =
     !showActions &&
@@ -1261,6 +1264,7 @@ const App: React.FC = () => {
     !showSchedule &&
     !showWindowManager &&
     !showMenuItemSearch &&
+    !showSemanticSearch &&
     !showOnboarding &&
     !showWhisperOnboarding;
   isLauncherModeActiveRef.current = isLauncherModeActive;
@@ -1366,6 +1370,12 @@ const App: React.FC = () => {
       window.clearTimeout(timer);
     };
   }, [searchQuery, shouldKeepLauncherSearchResults, homeDir, disableFileSearchResults]);
+
+  const semanticFileResults = useLauncherSemanticResults({
+    searchQuery,
+    enabled: !disableFileSearchResults && shouldKeepLauncherSearchResults,
+    setFileIcons: setLauncherFileIcons,
+  });
 
   useEffect(() => {
     if (!isLauncherModeActive) return;
@@ -1562,6 +1572,7 @@ const App: React.FC = () => {
     homeDir,
     launcherFileResults,
     launcherFileIcons,
+    semanticFileResults,
     pinnedFiles,
     pinnedCommands,
     recentCommands,
@@ -1804,6 +1815,7 @@ const App: React.FC = () => {
     openSpeak,
     openWindowManager,
     openMenuItemSearch,
+    openSemanticSearch,
     openSchedule,
     setShowWhisper,
     setShowWhisperOnboarding,
@@ -2856,6 +2868,28 @@ const App: React.FC = () => {
         <MenuItemSearch
           onClose={() => {
             setShowMenuItemSearch(false);
+            setSearchQuery('');
+            setSelectedIndex(0);
+            setTimeout(() => inputRef.current?.focus(), 50);
+          }}
+        />
+      </LauncherViewShell>
+    );
+  }
+
+  // ─── Semantic Search mode ──────────────────────────────────────────
+  if (showSemanticSearch) {
+    return (
+      <LauncherViewShell
+        alwaysMountedRunners={alwaysMountedRunners}
+        backgroundImageUrl={launcherBackgroundImageUrl}
+        showBackground={shouldUseBackgroundEverywhere}
+        backgroundBlurPercent={launcherBackgroundImageBlurPercent}
+        backgroundOpacityPercent={launcherBackgroundImageOpacityPercent}
+      >
+        <SemanticSearchExtension
+          onClose={() => {
+            setShowSemanticSearch(false);
             setSearchQuery('');
             setSelectedIndex(0);
             setTimeout(() => inputRef.current?.focus(), 50);

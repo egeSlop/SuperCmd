@@ -217,7 +217,8 @@
         "apiKeys": "API 密钥",
         "llm": "大语言模型",
         "whisper": "SuperCmd 语音输入",
-        "speak": "SuperCmd 语音朗读"
+        "speak": "SuperCmd 语音朗读",
+        "semanticSearch": "语义搜索"
       },
       "apiKeys": {
         "openai": {
@@ -502,7 +503,94 @@
       "hotkeyUpdated": "快捷键已更新。",
       "hotkeyRemoved": "快捷键已移除。",
       "hotkeyDuplicate": "快捷键已被其他 SuperCmd 命令使用。",
-      "hotkeyUnavailable": "快捷键不可用。它可能已被 macOS 或其他应用占用。"
+      "hotkeyUnavailable": "快捷键不可用。它可能已被 macOS 或其他应用占用。",
+      "semanticSearch": {
+        "helperMissing": "嵌入辅助程序尚未构建。请运行 npm run build:native，然后重启 SuperCmd。",
+        "enable": {
+          "title": "语义搜索",
+          "description": "按含义查找文件、照片、笔记和剪贴板项目。EmbeddingGemma 2 在你的 Mac GPU 上运行，数据不会离开你的设备。"
+        },
+        "model": {
+          "title": "模型",
+          "description": "EmbeddingGemma 2 文本模型。更小的量化占用更少的内存和磁盘空间，准确度损失极小。",
+          "variants": {
+            "compact": "紧凑 · Q4 · {size}",
+            "balanced": "均衡 · Q5 · {size}",
+            "precise": "精确 · Q8 · {size}"
+          }
+        },
+        "media": {
+          "title": "图像、视频和音频",
+          "description": "添加图像和音频编码器（{size}）。仅在为新媒体建立索引时加载。"
+        },
+        "status": {
+          "ready": "已下载",
+          "downloading": "正在下载… {percent}%",
+          "notDownloaded": "未下载",
+          "failed": "下载失败：{error}"
+        },
+        "actions": {
+          "download": "下载",
+          "retry": "重试"
+        },
+        "sources": {
+          "title": "来源",
+          "description": "要建立索引的内容。隐藏文件夹、应用包和构建输出会被跳过。",
+          "notes": "笔记",
+          "clipboard": "剪贴板历史"
+        },
+        "folders": {
+          "add": "添加文件夹…",
+          "remove": "移除文件夹",
+          "empty": "未选择文件夹"
+        },
+        "drives": {
+          "title": "驱动器",
+          "description": "外置驱动器和网络驱动器。开启后，索引保存在驱动器本身，另一台 Mac 上的 SuperCmd（或 Linux 上的 krunner-embed）也能搜索它，并一起保持索引最新。开启之前，不会读取驱动器上的任何内容。",
+          "empty": "未连接外置或网络驱动器",
+          "readOnly": "只读",
+          "notIndexed": "未建立索引 · 不会读取其中的内容",
+          "indexing": "正在建立索引 {processed} / {total}…",
+          "summary": "{items} 个文件",
+          "updated": "更新于 {time}",
+          "never": "尚未建立索引",
+          "onDrive": "索引保存在驱动器上",
+          "onThisMac": "索引保存在这台 Mac 上（只读驱动器）",
+          "searchOnly": "仅可搜索",
+          "locked": "{owner} 正在更新 · 最后活动：{time}",
+          "breakLock": "解除锁定",
+          "breakLockHint": "仅在那台电脑已关机或不再更新时使用。锁会在最后一次活动 15 分钟后自动失效。",
+          "incompatible": "其索引由其他模型创建，将保持不变。",
+          "confirmOff": "删除此驱动器的索引？其他电脑也将无法使用它；你的文件不受影响。",
+          "turnOff": "删除索引",
+          "cancel": "取消"
+        },
+        "index": {
+          "title": "索引",
+          "summary": "{items} 个项目 · {chunks} 个段落",
+          "lastUpdated": "上次更新：{time}",
+          "never": "尚未建立索引",
+          "progress": "正在建立索引 {processed} / {total}…",
+          "progressDrive": "正在为 {drive} 建立索引 {processed} / {total}…",
+          "error": "索引已停止：{error}",
+          "update": "立即更新",
+          "rebuild": "重建",
+          "pausedOnBattery": "使用电池时已暂停——接通电源后继续。"
+        },
+        "reset": {
+          "title": "移除模型和索引",
+          "description": "删除已下载的模型和搜索索引，并关闭语义搜索。",
+          "action": "移除"
+        },
+        "launcher": {
+          "title": "在主搜索中显示",
+          "description": "与搜索内容含义相近的文件会显示在名称匹配结果下方的单独分区中。输入应用或命令名称时不会显示。"
+        },
+        "power": {
+          "title": "仅在充电时建立索引",
+          "description": "只有在 Mac 接通电源时才会处理新增和修改的文件。搜索随时可用。"
+        }
+      }
     },
     "extensions": {
       "title": "扩展",
@@ -880,6 +968,7 @@
       "scripts": "脚本",
       "settings": "设置",
       "files": "文件",
+      "byMeaning": "按含义匹配",
       "calculator": "计算器",
       "quickLinks": "快速链接",
       "browser": "浏览器",
@@ -1365,5 +1454,56 @@
     "duration": "时长",
     "reminder": "提醒",
     "save": "保存事件"
+  },
+  "semanticSearch": {
+    "placeholder": "描述你要找的内容…",
+    "back": "返回",
+    "hint": "试试“航空公司的发票”“红色汽车的照片”或“关于旅行的笔记”。",
+    "emptyIndex": "尚未建立任何索引。请在设置中添加文件夹或来源。",
+    "searching": "搜索中…",
+    "noResults": "没有匹配项",
+    "indexing": "正在建立索引 {processed}/{total}",
+    "indexed": "已索引 {count} 个项目",
+    "filters": {
+      "all": "全部",
+      "document": "文稿",
+      "image": "图像",
+      "video": "视频",
+      "audio": "音频",
+      "note": "笔记",
+      "clipboard": "剪贴板"
+    },
+    "kinds": {
+      "document": "文稿",
+      "image": "图像",
+      "video": "视频",
+      "audio": "音频",
+      "note": "笔记",
+      "clipboard": "剪贴板"
+    },
+    "setup": {
+      "title": "按含义搜索",
+      "description": "只需描述，即可找到文件、照片、笔记和剪贴板项目。一切都通过 EmbeddingGemma 2 在你的 Mac 上运行。",
+      "includeMedia": "同时搜索图像、视频和音频（+{size}）",
+      "enable": "下载并启用（{size}）",
+      "downloading": "正在下载模型… {percent}%",
+      "settings": "设置"
+    },
+    "actions": {
+      "title": "操作",
+      "search": "搜索操作…",
+      "none": "未找到操作",
+      "open": "打开",
+      "openNote": "打开笔记",
+      "paste": "粘贴",
+      "showInFinder": "在 Finder 中显示",
+      "copyPath": "复制路径",
+      "copyText": "拷贝到剪贴板",
+      "reindex": "更新索引",
+      "settings": "语义搜索设置"
+    },
+    "pausedOnBattery": "使用电池时已暂停",
+    "waitingForPower": "Mac 接通电源后将开始建立索引。你也可以现在开始。",
+    "indexNow": "立即建立索引"
   }
 }

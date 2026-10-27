@@ -217,7 +217,8 @@
         "apiKeys": "API キー",
         "llm": "LLM",
         "whisper": "SuperCmd Whisper",
-        "speak": "SuperCmd Read"
+        "speak": "SuperCmd Read",
+        "semanticSearch": "セマンティック検索"
       },
       "apiKeys": {
         "openai": {
@@ -502,7 +503,94 @@
       "hotkeyUpdated": "ホットキーを更新しました。",
       "hotkeyRemoved": "ホットキーを削除しました。",
       "hotkeyDuplicate": "このホットキーは他の SuperCmd コマンドですでに使用されています。",
-      "hotkeyUnavailable": "ホットキーを使用できません。macOS または他のアプリで使用されている可能性があります。"
+      "hotkeyUnavailable": "ホットキーを使用できません。macOS または他のアプリで使用されている可能性があります。",
+      "semanticSearch": {
+        "helperMissing": "埋め込み用ヘルパーがまだビルドされていません。npm run build:native を実行してから SuperCmd を再起動してください。",
+        "enable": {
+          "title": "セマンティック検索",
+          "description": "ファイル、写真、メモ、クリップボードの項目を意味で検索します。EmbeddingGemma 2 は Mac の GPU 上で動作し、データがデバイスの外に出ることはありません。"
+        },
+        "model": {
+          "title": "モデル",
+          "description": "EmbeddingGemma 2 のテキストモデル。小さい量子化ほどメモリとディスクの使用量が少なく、精度の低下はごくわずかです。",
+          "variants": {
+            "compact": "コンパクト · Q4 · {size}",
+            "balanced": "バランス · Q5 · {size}",
+            "precise": "高精度 · Q8 · {size}"
+          }
+        },
+        "media": {
+          "title": "画像・動画・音声",
+          "description": "画像と音声のエンコーダー（{size}）を追加します。新しいメディアのインデックス作成中にのみ読み込まれます。"
+        },
+        "status": {
+          "ready": "ダウンロード済み",
+          "downloading": "ダウンロード中… {percent}%",
+          "notDownloaded": "未ダウンロード",
+          "failed": "ダウンロードに失敗しました: {error}"
+        },
+        "actions": {
+          "download": "ダウンロード",
+          "retry": "再試行"
+        },
+        "sources": {
+          "title": "対象",
+          "description": "インデックスの対象です。隠しフォルダ、アプリのパッケージ、ビルド出力はスキップされます。",
+          "notes": "メモ",
+          "clipboard": "クリップボード履歴"
+        },
+        "folders": {
+          "add": "フォルダを追加…",
+          "remove": "フォルダを削除",
+          "empty": "フォルダが選択されていません"
+        },
+        "drives": {
+          "title": "ドライブ",
+          "description": "外付けドライブとネットワークドライブ。オンにしたドライブはインデックスをドライブ自体に保存するため、別の Mac の SuperCmd（または Linux の krunner-embed）からも検索でき、最新の状態を一緒に保てます。オンにするまで、ドライブ上の内容は読み取りません。",
+          "empty": "外付けドライブやネットワークドライブが接続されていません",
+          "readOnly": "読み取り専用",
+          "notIndexed": "インデックスなし · 内容は読み取りません",
+          "indexing": "インデックス作成中 {processed} / {total}…",
+          "summary": "{items} 件のファイル",
+          "updated": "{time} に更新",
+          "never": "まだインデックスがありません",
+          "onDrive": "インデックスはドライブ上",
+          "onThisMac": "インデックスはこの Mac 上（読み取り専用ドライブ）",
+          "searchOnly": "検索のみ",
+          "locked": "{owner} が更新中 · 最終アクティビティ: {time}",
+          "breakLock": "ロックを解除",
+          "breakLockHint": "そのコンピュータの電源が切れているか、更新が止まっている場合のみ使ってください。ロックは最後のアクティビティから 15 分で失効します。",
+          "incompatible": "このインデックスは別のモデルで作成されたため、変更しません。",
+          "confirmOff": "このドライブのインデックスを削除しますか？他のコンピュータでも使えなくなります。ファイル自体は残ります。",
+          "turnOff": "インデックスを削除",
+          "cancel": "キャンセル"
+        },
+        "index": {
+          "title": "インデックス",
+          "summary": "{items} 項目 · {chunks} 段落",
+          "lastUpdated": "最終更新: {time}",
+          "never": "まだインデックスがありません",
+          "progress": "インデックス作成中 {processed} / {total}…",
+          "progressDrive": "{drive} のインデックス作成中 {processed} / {total}…",
+          "error": "インデックス作成が停止しました: {error}",
+          "update": "今すぐ更新",
+          "rebuild": "再構築",
+          "pausedOnBattery": "バッテリー駆動中のため一時停止中です。電源に接続すると再開します。"
+        },
+        "reset": {
+          "title": "モデルとインデックスを削除",
+          "description": "ダウンロードしたモデルと検索インデックスを削除し、セマンティック検索をオフにします。",
+          "action": "削除"
+        },
+        "launcher": {
+          "title": "メイン検索に表示",
+          "description": "検索語と意味が近いファイルを、名前で一致した結果の下に別のセクションとして表示します。アプリやコマンドの名前を入力しているときは表示されません。"
+        },
+        "power": {
+          "title": "充電中のみインデックスを作成",
+          "description": "新規・変更されたファイルは Mac が電源に接続されているときだけ処理されます。検索はいつでも使えます。"
+        }
+      }
     },
     "extensions": {
       "title": "拡張機能",
@@ -880,6 +968,7 @@
       "scripts": "スクリプト",
       "settings": "設定",
       "files": "ファイル",
+      "byMeaning": "意味で一致",
       "calculator": "電卓",
       "quickLinks": "クイックリンク",
       "browser": "ブラウザ",
@@ -1365,5 +1454,56 @@
     "duration": "期間",
     "reminder": "リマインダー",
     "save": "イベントを保存"
+  },
+  "semanticSearch": {
+    "placeholder": "探しているものを説明してください…",
+    "back": "戻る",
+    "hint": "「航空会社の請求書」「赤い車の写真」「旅行のメモ」などを試してみてください。",
+    "emptyIndex": "まだ何もインデックスされていません。設定でフォルダや対象を追加してください。",
+    "searching": "検索中…",
+    "noResults": "一致する項目はありません",
+    "indexing": "インデックス作成中 {processed}/{total}",
+    "indexed": "{count} 項目をインデックス済み",
+    "filters": {
+      "all": "すべて",
+      "document": "書類",
+      "image": "画像",
+      "video": "動画",
+      "audio": "音声",
+      "note": "メモ",
+      "clipboard": "クリップボード"
+    },
+    "kinds": {
+      "document": "書類",
+      "image": "画像",
+      "video": "動画",
+      "audio": "音声",
+      "note": "メモ",
+      "clipboard": "クリップボード"
+    },
+    "setup": {
+      "title": "意味で検索",
+      "description": "ファイル、写真、メモ、クリップボードの項目を、説明するだけで見つけられます。すべて EmbeddingGemma 2 で Mac 上で動作します。",
+      "includeMedia": "画像・動画・音声も検索する（+{size}）",
+      "enable": "ダウンロードして有効にする（{size}）",
+      "downloading": "モデルをダウンロード中… {percent}%",
+      "settings": "設定"
+    },
+    "actions": {
+      "title": "アクション",
+      "search": "アクションを検索…",
+      "none": "アクションが見つかりません",
+      "open": "開く",
+      "openNote": "メモを開く",
+      "paste": "ペースト",
+      "showInFinder": "Finder で表示",
+      "copyPath": "パスをコピー",
+      "copyText": "クリップボードにコピー",
+      "reindex": "インデックスを更新",
+      "settings": "セマンティック検索の設定"
+    },
+    "pausedOnBattery": "バッテリー駆動中は一時停止",
+    "waitingForPower": "Mac を電源に接続するとインデックス作成が始まります。今すぐ開始することもできます。",
+    "indexNow": "今すぐインデックス作成"
   }
 }

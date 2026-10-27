@@ -23,6 +23,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import HotkeyRecorder from './HotkeyRecorder';
+import SemanticSearchSettings from './SemanticSearchSettings';
 import type {
   AppSettings,
   AISettings,
@@ -233,12 +234,20 @@ const EDGE_TTS_FALLBACK_VOICES: EdgeVoiceDef[] = [
 
 const WHISPER_SPEAK_TOGGLE_COMMAND_ID = 'system-supercmd-whisper-speak-toggle';
 
-type TabId = 'api-keys' | 'llm' | 'whisper' | 'speak';
+type TabId = 'api-keys' | 'llm' | 'whisper' | 'speak' | 'semantic';
 
-const AITab: React.FC = () => {
+const SEMANTIC_SEARCH_COMMAND_ID = 'system-semantic-search';
+
+const AITab: React.FC<{ focusTarget?: { commandName?: string } | null }> = ({ focusTarget }) => {
   const { t } = useI18n();
   const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [activeTab, setActiveTab] = useState<TabId>('api-keys');
+  const [activeTab, setActiveTab] = useState<TabId>(
+    focusTarget?.commandName === SEMANTIC_SEARCH_COMMAND_ID ? 'semantic' : 'api-keys'
+  );
+
+  useEffect(() => {
+    if (focusTarget?.commandName === SEMANTIC_SEARCH_COMMAND_ID) setActiveTab('semantic');
+  }, [focusTarget]);
 
   const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [showAnthropicKey, setShowAnthropicKey] = useState(false);
@@ -860,7 +869,11 @@ const AITab: React.FC = () => {
         <TabButton id="llm" label={t('settings.ai.tabs.llm')} />
         <TabButton id="whisper" label={t('settings.ai.tabs.whisper')} />
         <TabButton id="speak" label={t('settings.ai.tabs.speak')} />
+        <TabButton id="semantic" label={t('settings.ai.tabs.semanticSearch')} />
       </div>
+
+      {/* Runs fully on-device with no provider, so it ignores the AI master switch. */}
+      {activeTab === 'semantic' && <SemanticSearchSettings />}
 
       <div className={`${!ai.enabled ? 'opacity-65 pointer-events-none select-none' : ''}`}>
         {(activeTab === 'api-keys' || activeTab === 'llm') && (

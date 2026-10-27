@@ -144,6 +144,18 @@ import {
 } from './file-search-index';
 import { ensureCalendarAccess, getCalendarEvents } from './calendar-events';
 import {
+  breakSemanticSearchLock,
+  downloadSemanticSearchModels,
+  getSemanticSearchStatus,
+  initSemanticSearch,
+  refreshSemanticSearchIndex,
+  resetSemanticSearch,
+  searchSemantic,
+  setSemanticSearchVolumeEnabled,
+  shutdownSemanticSearch,
+  updateSemanticSearchConfig,
+} from './semantic-search';
+import {
   openInDefaultBrowser as bsOpen,
   resolveInput as bsResolveInput,
   recordResolvedInput as bsRecordResolvedInput,
@@ -10999,6 +11011,7 @@ async function runCommandById(commandId: string, source: 'launcher' | 'hotkey' |
     commandId === 'system-search-history' ||
     commandId === 'system-my-schedule' ||
     commandId === 'system-menu-item-search' ||
+    commandId === 'system-semantic-search' ||
     commandId === 'system-camera'
   ) {
     return await openLauncherAndRunSystemCommand(commandId, {
@@ -13797,6 +13810,7 @@ app.whenReady().then(async () => {
   initSnippetStore();
   initNoteStore();
   initCanvasStore();
+  initSemanticSearch();
   try { refreshSnippetExpander(); } catch (e) {
     console.warn('[SnippetExpander] Failed to start:', e);
   }
@@ -17686,6 +17700,55 @@ if let tiff = image?.tiffRepresentation {
     return getWhisperCppModelStatus();
   });
 
+  // ─── Semantic Search (EmbeddingGemma 2) ───────────────────────────
+
+  ipcMain.handle('semantic-search-status', () => getSemanticSearchStatus());
+
+  ipcMain.handle('semantic-search-update-config', (_event: any, patch: any) => {
+    return updateSemanticSearchConfig(patch && typeof patch === 'object' ? patch : {});
+  });
+
+  ipcMain.handle('semantic-search-download-models', () => {
+    // Progress is read through semantic-search-status while this runs.
+    void downloadSemanticSearchModels();
+    return getSemanticSearchStatus();
+  });
+
+  ipcMain.handle('semantic-search-query', async (_event: any, query: string, options?: any) => {
+    return await searchSemantic(String(query || ''), {
+      limit: Number(options?.limit) || undefined,
+      kinds: Array.isArray(options?.kinds) ? options.kinds : undefined,
+      minZ: typeof options?.minZ === 'number' ? options.minZ : undefined,
+      launcher: options?.launcher === true,
+    });
+  });
+
+  ipcMain.handle('semantic-search-reindex', (_event: any, force?: boolean) => {
+    return refreshSemanticSearchIndex({ force: Boolean(force) });
+  });
+
+  ipcMain.handle('semantic-search-reset', () => resetSemanticSearch());
+
+  ipcMain.handle('semantic-search-set-volume-enabled', (_event: any, root: string, enabled: boolean) => {
+    return setSemanticSearchVolumeEnabled(String(root || ''), Boolean(enabled));
+  });
+
+  ipcMain.handle('semantic-search-break-lock', (_event: any, root: string) => {
+    return breakSemanticSearchLock(String(root || ''));
+  });
+
+  ipcMain.handle('semantic-search-pick-folder', async (event: any) => {
+    suppressBlurHide = true;
+    try {
+      const result = await dialog.showOpenDialog(getDialogParentWindow(event), {
+        properties: ['openDirectory', 'multiSelections'],
+      });
+      return result.canceled ? [] : result.filePaths || [];
+    } finally {
+      suppressBlurHide = false;
+    }
+  });
+
   ipcMain.handle('whispercpp-download-model', async () => {
     await ensureWhisperCppModelDownloaded();
     return getWhisperCppModelStatus();
@@ -19374,6 +19437,7 @@ app.on('will-quit', () => {
   stopSnippetExpander();
   stopEmojiTriggerMonitor();
   stopFileSearchIndexing();
+  shutdownSemanticSearch();
   try { soulverCalculator.shutdown(); } catch {}
   if (appTray) {
     try { appTray.destroy(); } catch {}

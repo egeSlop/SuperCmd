@@ -62,5 +62,6 @@ run(
 );
 
 run('node scripts/build-whispercpp.mjs');
+run('node scripts/build-llamacpp.mjs');
 run('node scripts/build-parakeet.mjs');
 run('node scripts/build-soulver-calculator.mjs');

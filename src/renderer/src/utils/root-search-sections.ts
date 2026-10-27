@@ -6,7 +6,9 @@ import {
   normalizeRootSearchText,
   rankRootSearchCandidates,
   tokenizeRootSearchQuery,
+  type MatchKind,
   type RootSearchCandidate,
+  type RootSearchSubtype,
 } from './root-search-ranking';
 
 export type RootSearchSectionAssemblyInput = {
@@ -16,6 +18,8 @@ export type RootSearchSectionAssemblyInput = {
   rootRankedCandidates: RootSearchCandidate[];
   browserCandidates: RootSearchCandidate[];
   fileCandidates: RootSearchCandidate[];
+  /** Files that match the query by meaning (semantic search), best first. */
+  semanticFileCommands?: CommandInfo[];
   webSearchRootDirectCommand: CommandInfo | null;
   webSearchRootSuggestionCommands: CommandInfo[];
   rootBangCandidateCommands: CommandInfo[];
@@ -34,9 +38,45 @@ export type RootSearchSectionAssemblyResult = {
   queryBrowserSectionCommands: CommandInfo[];
   querySearchSectionCommands: CommandInfo[];
   queryFileSectionCommands: CommandInfo[];
+  querySemanticSectionCommands: CommandInfo[];
   displayCommands: CommandInfo[];
   launcherCommandSections: RootSearchSection[];
 };
+
+export const MAX_LAUNCHER_SEMANTIC_RESULTS = 20;
+
+const APP_OR_COMMAND_SUBTYPES = new Set<RootSearchSubtype>([
+  'app',
+  'system-command',
+  'extension-command',
+  'script-command',
+  'quicklink',
+  'nickname',
+]);
+
+const NAME_MATCH_KINDS = new Set<MatchKind>([
+  'exact',
+  'alias-exact',
+  'nickname-exact',
+  'prefix',
+  'token-prefix',
+  'compact-prefix',
+]);
+
+/**
+ * "By meaning" files show up unless the query is clearly the name of an app
+ * or command ("notes", "calc"); a descriptive query of three or more words
+ * always gets them.
+ */
+function shouldShowSemanticFiles(input: RootSearchSectionAssemblyInput, promotedKeys: Set<string>): boolean {
+  if (!input.hasSearchQuery || input.rootBangMode !== 'none' || input.browserSearchSyntheticCommand) return false;
+  if (tokenizeRootSearchQuery(input.searchQuery).length >= 3) return true;
+  return !input.rootRankedCandidates.some((candidate) =>
+    promotedKeys.has(candidate.stableKey) &&
+    APP_OR_COMMAND_SUBTYPES.has(candidate.subtype) &&
+    NAME_MATCH_KINDS.has(candidate.matchKind)
+  );
+}
 
 const BROAD_FILE_PATH_QUERY_TERMS = new Set([
   'desktop',
@@ -219,6 +259,12 @@ export function assembleRootSearchSections(input: RootSearchSectionAssemblyInput
     queryFileSectionCommands.length === 0
       ? input.webSearchRootSuggestionCommands.slice(0, MAX_LAUNCHER_FILE_RESULTS)
       : [];
+  const listedKeys = new Set([...promotedKeys, ...queryFileSectionCommands.map(getCommandStableKey)]);
+  const querySemanticSectionCommands = shouldShowSemanticFiles(input, promotedKeys)
+    ? (input.semanticFileCommands || [])
+        .filter((command) => !listedKeys.has(getCommandStableKey(command)))
+        .slice(0, MAX_LAUNCHER_SEMANTIC_RESULTS)
+    : [];
 
   if (input.rootBangMode === 'selecting') {
     const displayCommands = input.webSearchSuggestionsEnabled ? input.rootBangCandidateCommands : [];
@@ -227,6 +273,7 @@ export function assembleRootSearchSections(input: RootSearchSectionAssemblyInput
       queryBrowserSectionCommands,
       querySearchSectionCommands,
       queryFileSectionCommands,
+      querySemanticSectionCommands,
       displayCommands,
       launcherCommandSections: input.webSearchSuggestionsEnabled
         ? [{ title: input.t('launcher.browserSearch.bangSections.matching'), items: displayCommands }].filter((section) => section.items.length > 0)
@@ -244,6 +291,7 @@ export function assembleRootSearchSections(input: RootSearchSectionAssemblyInput
       queryBrowserSectionCommands,
       querySearchSectionCommands,
       queryFileSectionCommands,
+      querySemanticSectionCommands,
       displayCommands,
       launcherCommandSections: [
         { title: '', items: input.webSearchRootDirectCommand ? [input.webSearchRootDirectCommand] : [] },
@@ -257,6 +305,7 @@ export function assembleRootSearchSections(input: RootSearchSectionAssemblyInput
         ...queryResultCommands,
         ...queryBrowserSectionCommands,
         ...queryFileSectionCommands,
+        ...querySemanticSectionCommands,
         ...querySearchSectionCommands,
       ]
     : [];
@@ -265,12 +314,14 @@ export function assembleRootSearchSections(input: RootSearchSectionAssemblyInput
     queryBrowserSectionCommands,
     querySearchSectionCommands,
     queryFileSectionCommands,
+    querySemanticSectionCommands,
     displayCommands,
     launcherCommandSections: input.hasSearchQuery
       ? [
           { title: input.t('launcher.sections.results'), items: queryResultCommands },
           { title: input.t('launcher.categories.browser'), items: queryBrowserSectionCommands },
           { title: input.t('launcher.categories.files'), items: queryFileSectionCommands },
+          { title: input.t('launcher.categories.byMeaning'), items: querySemanticSectionCommands },
           { title: input.t('launcher.categories.search'), items: querySearchSectionCommands },
         ].filter((section) => section.items.length > 0)
       : [],

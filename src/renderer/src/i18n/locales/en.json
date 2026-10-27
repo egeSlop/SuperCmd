@@ -217,7 +217,8 @@
         "apiKeys": "API Keys",
         "llm": "LLM",
         "whisper": "SuperCmd Whisper",
-        "speak": "SuperCmd Read"
+        "speak": "SuperCmd Read",
+        "semanticSearch": "Semantic Search"
       },
       "apiKeys": {
         "openai": {
@@ -502,7 +503,94 @@
       "hotkeyUpdated": "Hotkey updated.",
       "hotkeyRemoved": "Hotkey removed.",
       "hotkeyDuplicate": "Hotkey already used by another SuperCmd command.",
-      "hotkeyUnavailable": "Hotkey unavailable. It may be used by macOS or another app."
+      "hotkeyUnavailable": "Hotkey unavailable. It may be used by macOS or another app.",
+      "semanticSearch": {
+        "helperMissing": "The embedding helper isn't built yet. Run npm run build:native, then restart SuperCmd.",
+        "enable": {
+          "title": "Semantic Search",
+          "description": "Find files, photos, notes and clipboard items by meaning. Runs EmbeddingGemma 2 on your Mac's GPU; nothing leaves your device."
+        },
+        "model": {
+          "title": "Model",
+          "description": "EmbeddingGemma 2 text model. Smaller quantizations use less memory and disk with a tiny accuracy cost.",
+          "variants": {
+            "compact": "Compact · Q4 · {size}",
+            "balanced": "Balanced · Q5 · {size}",
+            "precise": "Precise · Q8 · {size}"
+          }
+        },
+        "media": {
+          "title": "Images, video & audio",
+          "description": "Adds the vision and audio encoder ({size}). It only loads while new media is being indexed."
+        },
+        "status": {
+          "ready": "Downloaded",
+          "downloading": "Downloading… {percent}%",
+          "notDownloaded": "Not downloaded",
+          "failed": "Download failed: {error}"
+        },
+        "actions": {
+          "download": "Download",
+          "retry": "Retry"
+        },
+        "sources": {
+          "title": "Sources",
+          "description": "What gets indexed. Hidden folders, app bundles and build output are skipped.",
+          "notes": "Notes",
+          "clipboard": "Clipboard history"
+        },
+        "folders": {
+          "add": "Add Folder…",
+          "remove": "Remove folder",
+          "empty": "No folders selected"
+        },
+        "drives": {
+          "title": "Drives",
+          "description": "External and network drives. A drive you turn on keeps its index on the drive itself, so SuperCmd on another Mac (or krunner-embed on Linux) can search it and help keep it up to date. Nothing on a drive is read until you turn it on.",
+          "empty": "No external or network drives connected",
+          "readOnly": "read-only",
+          "notIndexed": "Not indexed · nothing on it is read",
+          "indexing": "Indexing {processed} of {total}…",
+          "summary": "{items} files",
+          "updated": "updated {time}",
+          "never": "not indexed yet",
+          "onDrive": "index on the drive",
+          "onThisMac": "index on this Mac (read-only drive)",
+          "searchOnly": "search only",
+          "locked": "Being updated by {owner} · last active {time}",
+          "breakLock": "Break Lock",
+          "breakLockHint": "Only if that computer is off or no longer updating it. A lock expires 15 minutes after its last activity.",
+          "incompatible": "Its index was made with a different model and is left alone.",
+          "confirmOff": "Delete this drive's index? Other computers lose it too; your files stay.",
+          "turnOff": "Delete Index",
+          "cancel": "Cancel"
+        },
+        "index": {
+          "title": "Index",
+          "summary": "{items} items · {chunks} passages",
+          "lastUpdated": "Last updated {time}",
+          "never": "Not indexed yet",
+          "progress": "Indexing {processed} of {total}…",
+          "progressDrive": "Indexing {processed} of {total} on {drive}…",
+          "error": "Indexing stopped: {error}",
+          "update": "Update Now",
+          "rebuild": "Rebuild",
+          "pausedOnBattery": "Paused on battery — resumes when your Mac is plugged in."
+        },
+        "reset": {
+          "title": "Remove models & index",
+          "description": "Deletes the downloaded models and the search index, and turns Semantic Search off.",
+          "action": "Remove"
+        },
+        "launcher": {
+          "title": "Show in main search",
+          "description": "Files that match your search by meaning get their own section below the name matches. It stays hidden while you're typing the name of an app or command."
+        },
+        "power": {
+          "title": "Only index while charging",
+          "description": "New and changed files are embedded only when your Mac is plugged in. Searching always works."
+        }
+      }
     },
     "extensions": {
       "title": "Extensions",
@@ -880,6 +968,7 @@
       "scripts": "Scripts",
       "settings": "Settings",
       "files": "Files",
+      "byMeaning": "By Meaning",
       "calculator": "Calculator",
       "quickLinks": "Quick Links",
       "browser": "Browser",
@@ -1365,5 +1454,56 @@
     "duration": "Duration",
     "reminder": "Reminder",
     "save": "Save Event"
+  },
+  "semanticSearch": {
+    "placeholder": "Describe what you're looking for…",
+    "back": "Back",
+    "hint": "Try “invoice from the airline”, “photo of a red car” or “notes about the trip”.",
+    "emptyIndex": "Nothing indexed yet. Add folders or sources in Settings.",
+    "searching": "Searching…",
+    "noResults": "No matches",
+    "indexing": "Indexing {processed}/{total}",
+    "indexed": "{count} items indexed",
+    "filters": {
+      "all": "All",
+      "document": "Documents",
+      "image": "Images",
+      "video": "Videos",
+      "audio": "Audio",
+      "note": "Notes",
+      "clipboard": "Clipboard"
+    },
+    "kinds": {
+      "document": "Document",
+      "image": "Image",
+      "video": "Video",
+      "audio": "Audio",
+      "note": "Note",
+      "clipboard": "Clipboard"
+    },
+    "setup": {
+      "title": "Search by meaning",
+      "description": "Find files, photos, notes and clipboard items by describing them. Everything runs on your Mac with EmbeddingGemma 2.",
+      "includeMedia": "Also search images, video and audio (+{size})",
+      "enable": "Download & Enable ({size})",
+      "downloading": "Downloading model… {percent}%",
+      "settings": "Settings"
+    },
+    "actions": {
+      "title": "Actions",
+      "search": "Search for actions...",
+      "none": "No actions found",
+      "open": "Open",
+      "openNote": "Open Note",
+      "paste": "Paste",
+      "showInFinder": "Show in Finder",
+      "copyPath": "Copy Path",
+      "copyText": "Copy to Clipboard",
+      "reindex": "Update Index",
+      "settings": "Semantic Search Settings"
+    },
+    "pausedOnBattery": "Paused on battery",
+    "waitingForPower": "Indexing starts when your Mac is plugged in. You can also start it now.",
+    "indexNow": "Index Now"
   }
 }

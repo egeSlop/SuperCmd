@@ -4,6 +4,7 @@ import type {
   BrowserSearchResultGroupSetting,
   CommandInfo,
   IndexedFileSearchResult,
+  SemanticSearchResult,
   WebSearchBangUsageSetting,
 } from '../../types/electron';
 import type { BrowserSearchResult, useBrowserSearch } from './useBrowserSearch';
@@ -70,6 +71,7 @@ export type UseLauncherCommandModelParams = {
   homeDir: string;
   launcherFileResults: IndexedFileSearchResult[];
   launcherFileIcons: Record<string, string>;
+  semanticFileResults: SemanticSearchResult[];
   pinnedFiles: string[];
 
   pinnedCommands: string[];
@@ -284,6 +286,7 @@ export function useLauncherCommandModel({
   homeDir,
   launcherFileResults,
   launcherFileIcons,
+  semanticFileResults,
   pinnedFiles,
   pinnedCommands,
   recentCommands,
@@ -390,6 +393,26 @@ export function useLauncherCommandModel({
         };
       }),
     [launcherFileResults, launcherFileIcons, homeDir]
+  );
+
+  const semanticFileCommands = useMemo<CommandInfo[]>(
+    () =>
+      semanticFileResults.flatMap((result): CommandInfo[] => {
+        if (!result.path) return [];
+        return [{
+          id: buildFileResultCommandId(result.path),
+          title: result.title || getFileBasename(result.path),
+          subtitle: asTildePath(getFileDirname(result.path), homeDir),
+          keywords: [result.title, result.path],
+          iconDataUrl: launcherFileIcons[result.path] || undefined,
+          category: 'system',
+          path: result.path,
+          rootSearchStableKey: `file:${normalizeRootSearchStableValue(result.path)}`,
+          rootSearchSource: 'file',
+          rootSearchSubtype: 'file',
+        }];
+      }),
+    [semanticFileResults, launcherFileIcons, homeDir]
   );
 
   const pinnedFileCommands = useMemo<CommandInfo[]>(
@@ -829,6 +852,7 @@ export function useLauncherCommandModel({
     rootRankedCandidates,
     browserCandidates,
     fileCandidates,
+    semanticFileCommands,
     webSearchRootDirectCommand,
     webSearchRootSuggestionCommands,
     rootBangCandidateCommands,
@@ -844,6 +868,7 @@ export function useLauncherCommandModel({
     rootBangState.mode,
     rootRankedCandidates,
     searchQuery,
+    semanticFileCommands,
     t,
     webSearchRootDirectCommand,
     webSearchRootSuggestionCommands,

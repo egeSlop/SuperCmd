@@ -217,7 +217,8 @@
         "apiKeys": "Claves API",
         "llm": "LLM",
         "whisper": "SuperCmd Whisper",
-        "speak": "SuperCmd Read"
+        "speak": "SuperCmd Read",
+        "semanticSearch": "Búsqueda semántica"
       },
       "apiKeys": {
         "openai": {
@@ -502,7 +503,94 @@
       "hotkeyUpdated": "Atajo actualizado.",
       "hotkeyRemoved": "Atajo eliminado.",
       "hotkeyDuplicate": "Ese atajo ya esta siendo usado por otro comando de SuperCmd.",
-      "hotkeyUnavailable": "Atajo no disponible. Puede que lo este usando macOS u otra aplicacion."
+      "hotkeyUnavailable": "Atajo no disponible. Puede que lo este usando macOS u otra aplicacion.",
+      "semanticSearch": {
+        "helperMissing": "El asistente de embeddings aún no está compilado. Ejecuta npm run build:native y reinicia SuperCmd.",
+        "enable": {
+          "title": "Búsqueda semántica",
+          "description": "Encuentra archivos, fotos, notas y elementos del portapapeles por su significado. EmbeddingGemma 2 se ejecuta en la GPU de tu Mac; nada sale de tu dispositivo."
+        },
+        "model": {
+          "title": "Modelo",
+          "description": "Modelo de texto de EmbeddingGemma 2. Las cuantizaciones más pequeñas usan menos memoria y disco con una pérdida de precisión mínima.",
+          "variants": {
+            "compact": "Compacto · Q4 · {size}",
+            "balanced": "Equilibrado · Q5 · {size}",
+            "precise": "Preciso · Q8 · {size}"
+          }
+        },
+        "media": {
+          "title": "Imágenes, vídeo y audio",
+          "description": "Añade el codificador de imagen y audio ({size}). Solo se carga mientras se indexan archivos multimedia nuevos."
+        },
+        "status": {
+          "ready": "Descargado",
+          "downloading": "Descargando… {percent} %",
+          "notDownloaded": "No descargado",
+          "failed": "Error en la descarga: {error}"
+        },
+        "actions": {
+          "download": "Descargar",
+          "retry": "Reintentar"
+        },
+        "sources": {
+          "title": "Fuentes",
+          "description": "Qué se indexa. Se omiten las carpetas ocultas, los paquetes de apps y las carpetas de compilación.",
+          "notes": "Notas",
+          "clipboard": "Historial del portapapeles"
+        },
+        "folders": {
+          "add": "Añadir carpeta…",
+          "remove": "Quitar carpeta",
+          "empty": "No hay carpetas seleccionadas"
+        },
+        "drives": {
+          "title": "Discos",
+          "description": "Discos externos y de red. Un disco activado guarda su índice en el propio disco, así que SuperCmd en otro Mac (o krunner-embed en Linux) puede buscar en él y ayudar a mantenerlo al día. No se lee nada de un disco hasta que lo activas.",
+          "empty": "No hay discos externos ni de red conectados",
+          "readOnly": "solo lectura",
+          "notIndexed": "Sin indexar · no se lee nada",
+          "indexing": "Indexando {processed} de {total}…",
+          "summary": "{items} archivos",
+          "updated": "actualizado {time}",
+          "never": "aún sin indexar",
+          "onDrive": "índice en el disco",
+          "onThisMac": "índice en este Mac (disco de solo lectura)",
+          "searchOnly": "solo búsqueda",
+          "locked": "Lo está actualizando {owner} · última actividad {time}",
+          "breakLock": "Quitar bloqueo",
+          "breakLockHint": "Solo si ese ordenador está apagado o ya no lo está actualizando. Un bloqueo caduca 15 minutos después de su última actividad.",
+          "incompatible": "Su índice se creó con otro modelo y no se modifica.",
+          "confirmOff": "¿Eliminar el índice de este disco? Los demás ordenadores también lo pierden; tus archivos se conservan.",
+          "turnOff": "Eliminar índice",
+          "cancel": "Cancelar"
+        },
+        "index": {
+          "title": "Índice",
+          "summary": "{items} elementos · {chunks} fragmentos",
+          "lastUpdated": "Última actualización: {time}",
+          "never": "Aún sin indexar",
+          "progress": "Indexando {processed} de {total}…",
+          "progressDrive": "Indexando {processed} de {total} en {drive}…",
+          "error": "Indexación detenida: {error}",
+          "update": "Actualizar ahora",
+          "rebuild": "Reconstruir",
+          "pausedOnBattery": "En pausa con batería: se reanuda cuando conectes tu Mac a la corriente."
+        },
+        "reset": {
+          "title": "Eliminar modelos e índice",
+          "description": "Elimina los modelos descargados y el índice de búsqueda, y desactiva la búsqueda semántica.",
+          "action": "Eliminar"
+        },
+        "launcher": {
+          "title": "Mostrar en la búsqueda principal",
+          "description": "Los archivos cuyo significado coincide con tu búsqueda aparecen en su propia sección, debajo de las coincidencias por nombre. Se oculta mientras escribes el nombre de una app o un comando."
+        },
+        "power": {
+          "title": "Indexar solo mientras se carga",
+          "description": "Los archivos nuevos o modificados solo se procesan cuando tu Mac está conectado a la corriente. La búsqueda funciona siempre."
+        }
+      }
     },
     "extensions": {
       "title": "Configuración de extensiones",
@@ -880,6 +968,7 @@
       "scripts": "Scripts",
       "settings": "Settings",
       "files": "Archivos",
+      "byMeaning": "Por significado",
       "calculator": "Calculadora",
       "quickLinks": "Quick Links",
       "browser": "Navegador",
@@ -1365,5 +1454,56 @@
     "duration": "Duration",
     "reminder": "Reminder",
     "save": "Save Event"
+  },
+  "semanticSearch": {
+    "placeholder": "Describe lo que buscas…",
+    "back": "Atrás",
+    "hint": "Prueba «factura de la aerolínea», «foto de un coche rojo» o «notas sobre el viaje».",
+    "emptyIndex": "Aún no hay nada indexado. Añade carpetas o fuentes en Configuración.",
+    "searching": "Buscando…",
+    "noResults": "Sin resultados",
+    "indexing": "Indexando {processed}/{total}",
+    "indexed": "{count} elementos indexados",
+    "filters": {
+      "all": "Todo",
+      "document": "Documentos",
+      "image": "Imágenes",
+      "video": "Vídeos",
+      "audio": "Audio",
+      "note": "Notas",
+      "clipboard": "Portapapeles"
+    },
+    "kinds": {
+      "document": "Documento",
+      "image": "Imagen",
+      "video": "Vídeo",
+      "audio": "Audio",
+      "note": "Nota",
+      "clipboard": "Portapapeles"
+    },
+    "setup": {
+      "title": "Busca por significado",
+      "description": "Encuentra archivos, fotos, notas y elementos del portapapeles describiéndolos. Todo se ejecuta en tu Mac con EmbeddingGemma 2.",
+      "includeMedia": "Buscar también en imágenes, vídeo y audio (+{size})",
+      "enable": "Descargar y activar ({size})",
+      "downloading": "Descargando modelo… {percent} %",
+      "settings": "Configuración"
+    },
+    "actions": {
+      "title": "Acciones",
+      "search": "Buscar acciones…",
+      "none": "No se encontraron acciones",
+      "open": "Abrir",
+      "openNote": "Abrir nota",
+      "paste": "Pegar",
+      "showInFinder": "Mostrar en el Finder",
+      "copyPath": "Copiar ruta",
+      "copyText": "Copiar al portapapeles",
+      "reindex": "Actualizar índice",
+      "settings": "Configuración de la búsqueda semántica"
+    },
+    "pausedOnBattery": "En pausa con batería",
+    "waitingForPower": "La indexación empezará cuando conectes tu Mac a la corriente. También puedes iniciarla ahora.",
+    "indexNow": "Indexar ahora"
   }
 }

@@ -24,6 +24,7 @@ const DIRECT_LAUNCH_EXPANDED_SYSTEM_COMMAND_IDS = new Set([
   'system-search-quicklinks',
   'system-create-quicklink',
   'system-search-files',
+  'system-semantic-search',
   WEB_SEARCH_COMMAND_ID,
   BROWSER_SEARCH_OPEN_TABS_COMMAND_ID,
   BROWSER_SEARCH_BOOKMARKS_COMMAND_ID,
@@ -64,6 +65,7 @@ type UseLauncherLocalSystemCommandsOptions = {
   openSpeak: () => void;
   openWindowManager: () => void;
   openMenuItemSearch: () => void;
+  openSemanticSearch: () => void;
   openSchedule: () => void;
 
   setShowWhisper: React.Dispatch<React.SetStateAction<boolean>>;
@@ -116,6 +118,7 @@ export function useLauncherLocalSystemCommands(
     openSpeak,
     openWindowManager,
     openMenuItemSearch,
+    openSemanticSearch,
     openSchedule,
     setShowWhisper,
     setShowWhisperOnboarding,
@@ -210,6 +213,13 @@ export function useLauncherLocalSystemCommands(
     if (commandId === 'system-search-files') {
       whisperSessionRef.current = false;
       openFileSearch();
+      return true;
+    }
+    if (commandId === 'system-semantic-search') {
+      whisperSessionRef.current = false;
+      openSemanticSearch();
+      setSearchQuery('');
+      setSelectedIndex(0);
       return true;
     }
     if (commandId === WEB_SEARCH_COMMAND_ID) {
@@ -403,6 +413,7 @@ export function useLauncherLocalSystemCommands(
     openSpeak,
     openWindowManager,
     openMenuItemSearch,
+    openSemanticSearch,
     openSchedule,
     setShowWhisper,
     setShowWhisperOnboarding,

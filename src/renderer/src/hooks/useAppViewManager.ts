@@ -3,7 +3,7 @@
  *
  * Central view-state machine for the launcher. Owns every boolean/object flag
  * that determines which screen is shown (extension, preference setup, script
- * command setup/output, clipboard, snippets, quick links, file search, cursor prompt,
+ * command setup/output, clipboard, snippets, quick links, file search, semantic search, cursor prompt,
  * whisper, speak, camera, schedule, onboarding, AI mode).
  *
  * Key exports:
@@ -56,6 +56,7 @@ export interface AppViewManager {
   showSchedule: boolean;
   showWindowManager: boolean;
   showMenuItemSearch: boolean;
+  showSemanticSearch: boolean;
   showAppUninstall: string | null;
   showWhisperOnboarding: boolean;
   showWhisperHint: boolean;
@@ -83,6 +84,7 @@ export interface AppViewManager {
   openSchedule: () => void;
   openWindowManager: () => void;
   openMenuItemSearch: () => void;
+  openSemanticSearch: () => void;
   openAppUninstall: (appPath: string) => void;
   openWhisperOnboarding: () => void;
   openOnboarding: () => void;
@@ -108,6 +110,7 @@ export interface AppViewManager {
   setShowSchedule: React.Dispatch<React.SetStateAction<boolean>>;
   setShowWindowManager: React.Dispatch<React.SetStateAction<boolean>>;
   setShowMenuItemSearch: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowSemanticSearch: React.Dispatch<React.SetStateAction<boolean>>;
   setShowAppUninstall: React.Dispatch<React.SetStateAction<string | null>>;
   setShowWhisperOnboarding: React.Dispatch<React.SetStateAction<boolean>>;
   setShowWhisperHint: React.Dispatch<React.SetStateAction<boolean>>;
@@ -134,6 +137,7 @@ export function useAppViewManager(): AppViewManager {
   const [showSchedule, setShowSchedule] = useState(false);
   const [showWindowManager, setShowWindowManager] = useState(false);
   const [showMenuItemSearch, setShowMenuItemSearch] = useState(false);
+  const [showSemanticSearch, setShowSemanticSearch] = useState(false);
   const [showAppUninstall, setShowAppUninstall] = useState<string | null>(null);
   const [showWhisperOnboarding, setShowWhisperOnboarding] = useState(false);
   const [showWhisperHint, setShowWhisperHint] = useState(false);
@@ -160,6 +164,7 @@ export function useAppViewManager(): AppViewManager {
     setShowSchedule(false);
     setShowWindowManager(false);
     setShowMenuItemSearch(false);
+    setShowSemanticSearch(false);
     setShowAppUninstall(null);
     setShowWhisperOnboarding(false);
     setShowWhisperHint(false);
@@ -258,6 +263,11 @@ export function useAppViewManager(): AppViewManager {
     setShowMenuItemSearch(true);
   }, [resetAllViews]);
 
+  const openSemanticSearch = useCallback(() => {
+    resetAllViews();
+    setShowSemanticSearch(true);
+  }, [resetAllViews]);
+
   const openAppUninstall = useCallback((appPath: string) => {
     // Don't call resetAllViews() — it can trigger side effects in menubar
     // extensions that cause SIGTRAP crashes. Just set the uninstall view directly.
@@ -302,6 +312,7 @@ export function useAppViewManager(): AppViewManager {
     showSchedule,
     showWindowManager,
     showMenuItemSearch,
+    showSemanticSearch,
     showAppUninstall,
     showWhisperOnboarding,
     showWhisperHint,
@@ -327,6 +338,7 @@ export function useAppViewManager(): AppViewManager {
     openSchedule,
     openWindowManager,
     openMenuItemSearch,
+    openSemanticSearch,
     openAppUninstall,
     openWhisperOnboarding,
     openOnboarding,
@@ -351,6 +363,7 @@ export function useAppViewManager(): AppViewManager {
     setShowSchedule,
     setShowWindowManager,
     setShowMenuItemSearch,
+    setShowSemanticSearch,
     setShowAppUninstall,
     setShowWhisperOnboarding,
     setShowWhisperHint,

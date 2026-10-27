@@ -217,7 +217,8 @@
         "apiKeys": "API 키",
         "llm": "LLM",
         "whisper": "SuperCmd Whisper",
-        "speak": "SuperCmd Read"
+        "speak": "SuperCmd Read",
+        "semanticSearch": "시맨틱 검색"
       },
       "apiKeys": {
         "openai": {
@@ -502,7 +503,94 @@
       "hotkeyUpdated": "단축키가 업데이트되었습니다.",
       "hotkeyRemoved": "단축키가 제거되었습니다.",
       "hotkeyDuplicate": "다른 SuperCmd 명령에서 이미 사용 중인 단축키입니다.",
-      "hotkeyUnavailable": "단축키를 사용할 수 없습니다. macOS 또는 다른 앱에서 사용될 수 있습니다."
+      "hotkeyUnavailable": "단축키를 사용할 수 없습니다. macOS 또는 다른 앱에서 사용될 수 있습니다.",
+      "semanticSearch": {
+        "helperMissing": "임베딩 도우미가 아직 빌드되지 않았습니다. npm run build:native를 실행한 뒤 SuperCmd를 다시 시작하세요.",
+        "enable": {
+          "title": "시맨틱 검색",
+          "description": "파일, 사진, 메모, 클립보드 항목을 의미로 찾습니다. EmbeddingGemma 2가 Mac의 GPU에서 실행되며 데이터는 기기 밖으로 나가지 않습니다."
+        },
+        "model": {
+          "title": "모델",
+          "description": "EmbeddingGemma 2 텍스트 모델입니다. 더 작은 양자화일수록 메모리와 디스크를 적게 사용하며 정확도 손실은 아주 작습니다.",
+          "variants": {
+            "compact": "컴팩트 · Q4 · {size}",
+            "balanced": "균형 · Q5 · {size}",
+            "precise": "정밀 · Q8 · {size}"
+          }
+        },
+        "media": {
+          "title": "이미지, 동영상 및 오디오",
+          "description": "이미지 및 오디오 인코더({size})를 추가합니다. 새 미디어를 색인하는 동안에만 로드됩니다."
+        },
+        "status": {
+          "ready": "다운로드됨",
+          "downloading": "다운로드 중… {percent}%",
+          "notDownloaded": "다운로드되지 않음",
+          "failed": "다운로드 실패: {error}"
+        },
+        "actions": {
+          "download": "다운로드",
+          "retry": "다시 시도"
+        },
+        "sources": {
+          "title": "소스",
+          "description": "색인 대상입니다. 숨김 폴더, 앱 번들, 빌드 결과물은 건너뜁니다.",
+          "notes": "메모",
+          "clipboard": "클립보드 기록"
+        },
+        "folders": {
+          "add": "폴더 추가…",
+          "remove": "폴더 제거",
+          "empty": "선택된 폴더가 없습니다"
+        },
+        "drives": {
+          "title": "드라이브",
+          "description": "외장 드라이브와 네트워크 드라이브입니다. 켜 둔 드라이브는 색인을 드라이브 자체에 저장하므로 다른 Mac의 SuperCmd(또는 Linux의 krunner-embed)에서도 검색할 수 있고, 색인을 함께 최신 상태로 유지합니다. 켜기 전에는 드라이브의 내용을 읽지 않습니다.",
+          "empty": "연결된 외장 드라이브나 네트워크 드라이브가 없습니다",
+          "readOnly": "읽기 전용",
+          "notIndexed": "색인되지 않음 · 내용을 읽지 않음",
+          "indexing": "색인 중 {processed} / {total}…",
+          "summary": "파일 {items}개",
+          "updated": "{time}에 업데이트됨",
+          "never": "아직 색인되지 않음",
+          "onDrive": "색인은 드라이브에 저장",
+          "onThisMac": "색인은 이 Mac에 저장(읽기 전용 드라이브)",
+          "searchOnly": "검색만 가능",
+          "locked": "{owner}에서 업데이트 중 · 마지막 활동: {time}",
+          "breakLock": "잠금 해제",
+          "breakLockHint": "그 컴퓨터가 꺼져 있거나 더 이상 업데이트하지 않을 때만 사용하세요. 잠금은 마지막 활동 후 15분이 지나면 만료됩니다.",
+          "incompatible": "이 색인은 다른 모델로 만들어져 그대로 둡니다.",
+          "confirmOff": "이 드라이브의 색인을 삭제할까요? 다른 컴퓨터에서도 사라집니다. 파일은 그대로 남습니다.",
+          "turnOff": "색인 삭제",
+          "cancel": "취소"
+        },
+        "index": {
+          "title": "색인",
+          "summary": "항목 {items}개 · 구간 {chunks}개",
+          "lastUpdated": "마지막 업데이트: {time}",
+          "never": "아직 색인되지 않음",
+          "progress": "색인 중 {processed} / {total}…",
+          "progressDrive": "{drive} 색인 중 {processed} / {total}…",
+          "error": "색인이 중단됨: {error}",
+          "update": "지금 업데이트",
+          "rebuild": "다시 빌드",
+          "pausedOnBattery": "배터리 사용 중이라 일시 정지됨 — 전원에 연결하면 다시 시작됩니다."
+        },
+        "reset": {
+          "title": "모델 및 색인 제거",
+          "description": "다운로드한 모델과 검색 색인을 삭제하고 시맨틱 검색을 끕니다.",
+          "action": "제거"
+        },
+        "launcher": {
+          "title": "기본 검색에 표시",
+          "description": "검색어와 의미가 비슷한 파일을 이름 일치 결과 아래 별도 섹션에 표시합니다. 앱이나 명령 이름을 입력하는 동안에는 표시되지 않습니다."
+        },
+        "power": {
+          "title": "충전 중에만 색인",
+          "description": "새 파일과 변경된 파일은 Mac이 전원에 연결되어 있을 때만 처리됩니다. 검색은 언제나 사용할 수 있습니다."
+        }
+      }
     },
     "extensions": {
       "title": "확장",
@@ -880,6 +968,7 @@
       "scripts": "스크립트",
       "settings": "설정",
       "files": "파일",
+      "byMeaning": "의미로 일치",
       "calculator": "계산자",
       "quickLinks": "빠른 링크",
       "browser": "브라우저",
@@ -1365,5 +1454,56 @@
     "duration": "기간",
     "reminder": "알림",
     "save": "이벤트 저장"
+  },
+  "semanticSearch": {
+    "placeholder": "찾고 있는 것을 설명해 보세요…",
+    "back": "뒤로",
+    "hint": "“항공사 청구서”, “빨간 자동차 사진”, “여행 메모” 같은 검색어를 입력해 보세요.",
+    "emptyIndex": "아직 색인된 항목이 없습니다. 설정에서 폴더나 소스를 추가하세요.",
+    "searching": "검색 중…",
+    "noResults": "일치하는 항목 없음",
+    "indexing": "색인 중 {processed}/{total}",
+    "indexed": "항목 {count}개 색인됨",
+    "filters": {
+      "all": "전체",
+      "document": "문서",
+      "image": "이미지",
+      "video": "동영상",
+      "audio": "오디오",
+      "note": "메모",
+      "clipboard": "클립보드"
+    },
+    "kinds": {
+      "document": "문서",
+      "image": "이미지",
+      "video": "동영상",
+      "audio": "오디오",
+      "note": "메모",
+      "clipboard": "클립보드"
+    },
+    "setup": {
+      "title": "의미로 검색",
+      "description": "파일, 사진, 메모, 클립보드 항목을 설명만으로 찾을 수 있습니다. 모든 작업은 EmbeddingGemma 2로 Mac에서 실행됩니다.",
+      "includeMedia": "이미지, 동영상, 오디오도 검색(+{size})",
+      "enable": "다운로드 후 활성화({size})",
+      "downloading": "모델 다운로드 중… {percent}%",
+      "settings": "설정"
+    },
+    "actions": {
+      "title": "동작",
+      "search": "동작 검색…",
+      "none": "동작을 찾을 수 없음",
+      "open": "열기",
+      "openNote": "메모 열기",
+      "paste": "붙여넣기",
+      "showInFinder": "Finder에 표시",
+      "copyPath": "경로 복사",
+      "copyText": "클립보드에 복사",
+      "reindex": "색인 업데이트",
+      "settings": "시맨틱 검색 설정"
+    },
+    "pausedOnBattery": "배터리 사용 중 일시 정지",
+    "waitingForPower": "Mac을 전원에 연결하면 색인이 시작됩니다. 지금 바로 시작할 수도 있습니다.",
+    "indexNow": "지금 색인"
   }
 }
